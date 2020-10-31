@@ -6,14 +6,15 @@ Platform::Platform(int horizontal, int vertical) {
     _irTemp = Adafruit_MLX90614();
 	_irTemp.begin();
 }
+Platform::Platform() {}
 
 void Platform::setHorAngle(int angle) {
-  _horAngle = angle;
-  _hor.write(angle);
+	_horAngle = angle;
+	_hor.write(angle);
 }
 void Platform::setVerAngle(int angle) {
-  _verAngle = angle;
-  _ver.write(angle);
+	_verAngle = angle;
+	_ver.write(angle);
 }
 void Platform::rotateHorizontally(int angle) {
     setHorAngle(_horAngle + angle);
@@ -23,9 +24,9 @@ void Platform::rotateVertically(int angle) {
 }
 
 double Platform::takeObjectMeasure() {
-  return _irTemp.readObjectTempC();
+	return _irTemp.readObjectTempC();
 }
 
 double Platform::takeAmbientMeasure() {
-  return _irTemp.readAmbientTempC();
+	return _irTemp.readAmbientTempC();
 }

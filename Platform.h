@@ -1,3 +1,6 @@
+#ifndef PLATFORM_HEADER
+#define PLATFORM_HEADER
+
 #include <Servo.h>
 #include "Adafruit_MLX90614.h"
 class Platform {
@@ -15,3 +18,5 @@ public:
   double takeObjectMeasure();
   double takeAmbientMeasure();
 };
+
+#endif
