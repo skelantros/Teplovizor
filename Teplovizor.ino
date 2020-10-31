@@ -1,9 +1,11 @@
 #include "Platform.h"
 #include "MeasureConfigurator.h"
+#include "Interpolation.h"
 
 Platform platform;
 MeasureConfigurator configurator;
 
+// функция вывода массива в консоль Arduino
 void printArray(double** arr, int rows, int columns) {
   for(int r = 0; r < rows; ++r) {
     for(int c = 0; c < columns; ++c) {
@@ -28,13 +30,35 @@ void setup() {
   int verMax = 120;
   int horSection = 5;
   int verSection = 5;
-  
+
+  // инициализация конфигуратора
   configurator = MeasureConfigurator(horMin, horMax, horSection,
                                      verMin, verMax, verSection,
                                      singleTime, platform);
 
   Serial.begin(9600);
-  printArray(configurator.measure(), verSection, horSection);
+  // произведение замеров
+  double** src_arr = configurator.measure();
+  Serial.println("Source array: ");
+  printArray(src_arr, configurator.getVerSection(), configurator.getHorSection());
+  
+  int new_rows = 7;
+  int new_columns = 12;
+  // интерполяция тепловой карты
+  double** new_arr = interpolateArray(src_arr, configurator.getVerSection(), configurator.getHorSection(),
+                                      new_rows, new_columns);
+  Serial.println("Interpolated array: ");
+  printArray(new_arr, new_rows, new_columns);
+
+  for(int r = 0; r < new_rows; ++r) {
+    delete[] new_arr[r];
+  }
+  delete[] new_arr;
+
+  for(int r = 0; r < configurator.getVerSection(); ++r) {
+    delete[] src_arr[r];
+  }
+  delete src_arr;
 }
 
 void loop() {
