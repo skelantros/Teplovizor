@@ -1,23 +1,31 @@
 #include "Platform.h"
 
-void Platform::init() {
-    _hor.write(0);
-    _ver.write(90);
-    _horAngle = 0;
-	_verAngle = 90; 
+Platform::Platform(int horizontal, int vertical) {
+    _hor.attach(horizontal);
+	_ver.attach(vertical);
+    _irTemp = Adafruit_MLX90614();
+	_irTemp.begin();
 }
 
-Platform::Platform(Servo horizontal, Servo vertical) {
-    _hor = horizontal;
-	_ver = vertical;
-	init();
+void Platform::setHorAngle(int angle) {
+  _horAngle = angle;
+  _hor.write(angle);
 }
-
+void Platform::setVerAngle(int angle) {
+  _verAngle = angle;
+  _ver.write(angle);
+}
 void Platform::rotateHorizontally(int angle) {
-    _horAngle += angle;
-    _hor.write(_horAngle);
+    setHorAngle(_horAngle + angle);
 }
 void Platform::rotateVertically(int angle) {
-    _verAngle += angle;
-    _ver.write(_verAngle);
+    setVerAngle(_verAngle + angle);
+}
+
+double Platform::takeObjectMeasure() {
+  return _irTemp.readObjectTempC();
+}
+
+double Platform::takeAmbientMeasure() {
+  return _irTemp.readAmbientTempC();
 }
