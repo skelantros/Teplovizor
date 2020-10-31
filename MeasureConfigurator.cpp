@@ -35,7 +35,7 @@ double** MeasureConfigurator::measure() {
         for(int h = 0; h < _horSection; ++h) {
             arr[v][h] = _platform.takeObjectMeasure();
             _platform.setHorAngle((int) round(currHorAngle));
-            Serial.print(currHorAngle); Serial.print(' '); Serial.println(currVerAngle);
+            //Serial.print(currHorAngle); Serial.print(' '); Serial.println(currVerAngle);
             delay(_singleTime);
             currHorAngle += horDiff;
         }
