@@ -1,6 +1,14 @@
 #include "Interpolation.h"
 #include <math.h>
 
+double** makeArray(int rows, int columns) {
+	double** arr = new double*[rows];
+	for(int r = 0; r < rows; ++r) {
+		arr[r] = new double[columns];
+	}
+	return arr;
+}
+
 double interpolateFunction(double arg, int arg1, int arg2,
 	double func1, double func2) {
 	if (func1 == func2) return func1;
@@ -51,9 +59,7 @@ double** resizeVertically(double** src, int src_r, int src_c, int dest_r) {
 double** interpolateArray(double** src, int src_r, int src_c, int dest_r, int dest_c) {
 
 	double** hor_resized = resizeHorizontally(src, src_r, src_c, dest_c);
-	printArray(hor_resized, src_r, dest_c);
 	double** ver_resized = resizeVertically(hor_resized, src_r, dest_c, dest_r);
-	printArray(ver_resized, dest_r, dest_c);
 
 	for (int i = 0; i < src_r; ++i) {
 		delete[] hor_resized[i];
