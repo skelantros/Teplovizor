@@ -68,3 +68,50 @@ double** interpolateArray(double** src, int src_r, int src_c, int dest_r, int de
 
 	return ver_resized;
 }
+
+void staticHorizontally(uint16_t** src, uint16_t src_r, uint16_t src_c, 
+					    uint16_t** dest, uint16_t dest_c) {
+	double coeff = 1.0 * (src_c - 1) / (dest_c - 1);
+
+	for (int c = 0; c < dest_c - 1; ++c) {
+		double c_tr = coeff * c;
+		int c_rnd = floor(c_tr);
+		for (int r = 0; r < src_r; ++r) {
+			if (r == src_r - 1 && c == dest_c - 1) continue;
+			dest[r][c] = interpolateFunction(c_tr, c_rnd, c_rnd + 1, src[r][c_rnd], src[r][c_rnd + 1]);
+		}
+	}
+
+	// fill the last column
+	for (int r = 0; r < src_r; ++r) {
+		dest[r][dest_c - 1] = src[r][src_c - 1];
+	}
+}
+
+void staticVertically(uint16_t** src, uint16_t src_r, uint16_t src_c, 
+					  uint16_t** dest, uint16_t dest_r) {
+	double coeff = 1.0 * (src_r - 1) / (dest_r - 1);
+
+	for (int r = 0; r < dest_r - 1; ++r) {
+		double r_tr = coeff * r;
+		int r_rnd = floor(r_tr);
+		for (int c = 0; c < src_c; ++c) {
+			if (r == dest_r - 1 && c == src_c - 1) continue;
+			dest[r][c] = interpolateFunction(r_tr, r_rnd, r_rnd + 1, src[r_rnd][c], src[r_rnd + 1][c]);
+		}
+	}
+
+	// fill the last row
+	for (int c = 0; c < src_c; ++c) {
+		dest[dest_r - 1][c] = src[src_r - 1][c];
+	}
+}
+
+void staticInterpolate(uint16_t** src, uint16_t src_r, uint16_t src_c, uint16_t** dest) {
+	if(src_r > dest_r || src_c > dest_c) 
+		throw "Source array must be less or equal than result in both dimensions.";
+	uint16_t intermediate_arr[interpolations_constants::res_rows][interpolations_constants::res_columns];
+	staticHorizontally(src, src_r, src_c, intermediate_arr, interpolations_constants::res_columns);
+	staticVertically(intermediate_arr, src_r, interpolations_constants::res_columns, 
+					dest, interpolations_constants::res_rows, interpolations_constants::res_columns)
+}
