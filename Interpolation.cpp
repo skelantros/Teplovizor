@@ -1,9 +1,10 @@
 #include "Interpolation.h"
 #include <math.h>
 
+
 double** makeArray(int rows, int columns) {
-	double** arr = new double*[rows];
-	for(int r = 0; r < rows; ++r) {
+	double** arr = new double* [rows];
+	for (int r = 0; r < rows; ++r) {
 		arr[r] = new double[columns];
 	}
 	return arr;
@@ -12,7 +13,7 @@ double** makeArray(int rows, int columns) {
 double interpolateFunction(double arg, int arg1, int arg2,
 	double func1, double func2) {
 	if (func1 == func2) return func1;
-	else return (func1 + (func2 - func1)*(arg - arg1)) / (arg2 - arg1);
+	else return (func1 + (func2 - func1) * (arg - arg1)) / (arg2 - arg1);
 }
 
 double** resizeHorizontally(double** src, int src_r, int src_c, int dest_c) {
@@ -49,7 +50,7 @@ double** resizeVertically(double** src, int src_r, int src_c, int dest_r) {
 	}
 
 	// fill the last row
-	
+
 	for (int c = 0; c < src_c; ++c) {
 		dest[dest_r - 1][c] = src[src_r - 1][c];
 	}
@@ -69,8 +70,8 @@ double** interpolateArray(double** src, int src_r, int src_c, int dest_r, int de
 	return ver_resized;
 }
 
-void staticHorizontally(uint16_t** src, uint16_t src_r, uint16_t src_c, 
-					    uint16_t** dest, uint16_t dest_c) {
+void staticHorizontally(byte** src, int src_r, int src_c,
+	byte dest[][interpolations_constants::res_columns], int dest_c) {
 	double coeff = 1.0 * (src_c - 1) / (dest_c - 1);
 
 	for (int c = 0; c < dest_c - 1; ++c) {
@@ -88,8 +89,8 @@ void staticHorizontally(uint16_t** src, uint16_t src_r, uint16_t src_c,
 	}
 }
 
-void staticVertically(uint16_t** src, uint16_t src_r, uint16_t src_c, 
-					  uint16_t** dest, uint16_t dest_r) {
+void staticVertically(byte src[][interpolations_constants::res_columns], int src_r, int src_c,
+	byte dest[][interpolations_constants::res_columns], int dest_r) {
 	double coeff = 1.0 * (src_r - 1) / (dest_r - 1);
 
 	for (int r = 0; r < dest_r - 1; ++r) {
@@ -107,11 +108,13 @@ void staticVertically(uint16_t** src, uint16_t src_r, uint16_t src_c,
 	}
 }
 
-void staticInterpolate(uint16_t** src, uint16_t src_r, uint16_t src_c, uint16_t** dest) {
-	if(src_r > dest_r || src_c > dest_c) 
+byte intermediate_arr[interpolations_constants::res_rows][interpolations_constants::res_columns];
+
+
+void staticInterpolate(byte** src, int src_r, int src_c, byte dest[][interpolations_constants::res_columns]) {
+	if (src_r > interpolations_constants::res_rows || src_c > interpolations_constants::res_columns)
 		throw "Source array must be less or equal than result in both dimensions.";
-	uint16_t intermediate_arr[interpolations_constants::res_rows][interpolations_constants::res_columns];
 	staticHorizontally(src, src_r, src_c, intermediate_arr, interpolations_constants::res_columns);
-	staticVertically(intermediate_arr, src_r, interpolations_constants::res_columns, 
-					dest, interpolations_constants::res_rows, interpolations_constants::res_columns)
+	staticVertically(intermediate_arr, src_r, interpolations_constants::res_columns,
+		dest, interpolations_constants::res_rows);
 }
