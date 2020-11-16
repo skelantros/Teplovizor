@@ -4,8 +4,8 @@
 typedef short byte;
 
 namespace interpolations_constants {
-    const uint16_t res_rows = 240;
-    const uint16_t res_columns = 320;
+	const byte res_rows = 20;
+	const byte res_columns = 50;
 }
 
 void staticInterpolate(byte** src, int src_r, int src_c, byte dest[][interpolations_constants::res_columns]);
