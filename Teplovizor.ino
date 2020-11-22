@@ -11,6 +11,9 @@
 #include "Interpolation.h"
 #include "DefinedConstants.h"
 
+void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
+                      Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p);
+
 
 Platform platform;
 MeasureConfigurator configurator;
@@ -105,8 +108,6 @@ void setup() {
 }
 int flag = 0;
 void loop() {
-
-  delay(1000); // can adjust this for faster/slower updates
   TSPoint p;
 
   digitalWrite(13, HIGH);
@@ -184,76 +185,16 @@ void loop() {
     }
   }
   else if (idx == 4) {
-    for (uint8_t b = 0; b < GRID_OPTIONS; b++) {
-      if (grid_buttons[b].contains(p.x, p.y)) {
-        switch (b) {
-          case GRID_MINUS:
-            grid_menu();
-            break;
-          case GRID_PLUS:
-            grid_menu();
-            break;
-          case GRID_BACK:
-            menu();
-            idx -= 2;
-            break;
-        }
-      }
-    }
+    settings_handler(grid, 5, 20, 3, grid_menu, grid_buttons, GRID_PLUS, GRID_MINUS, GRID_BACK, p);
   }
   else if (idx == 5) {
-    for (uint8_t b = 0; b < COLOR_OPTIONS; b++) {
-      if (color_buttons[b].contains(p.x, p.y)) {
-        switch (b) {
-          case COLOR_LEFT:
-            color_menu();
-            break;
-          case COLOR_RIGHT:
-            color_menu();
-            break;
-          case COLOR_BACK:
-            menu();
-            idx -= 3;
-            break;
-        }
-      }
-    }
+    settings_handler(color_choice, 0, 1, 1, color_menu, color_buttons, COLOR_RIGHT, COLOR_LEFT, COLOR_BACK, p);
   }
   else if (idx == 6) {
-    for (uint8_t b = 0; b < TIME_OPTIONS; b++) {
-      if (time_buttons[b].contains(p.x, p.y)) {
-        switch (b) {
-          case TIME_LEFT:
-            time_menu();
-            break;
-          case TIME_RIGHT:
-            time_menu();
-            break;
-          case TIME_BACK:
-            menu();
-            idx -= 4;
-            break;
-        }
-      }
-    }
+    settings_handler(time_choice, 100, 5000, 100, time_menu, time_buttons, TIME_RIGHT, TIME_LEFT, TIME_BACK, p);
   }
   else if (idx == 7) {
-    for (uint8_t b = 0; b < ANGLE_OPTIONS; b++) {
-      if (angle_buttons[b].contains(p.x, p.y)) {
-        switch (b) {
-          case ANGLE_LEFT:
-            angle_menu();
-            break;
-          case ANGLE_RIGHT:
-            angle_menu();
-            break;
-          case ANGLE_BACK:
-            menu();
-            idx -= 5;
-            break;
-        }
-      }
-    }
+    settings_handler(hor_angle, 30, 90, 10, angle_menu, angle_buttons, ANGLE_RIGHT, ANGLE_LEFT, ANGLE_BACK, p);
   }
 
   if (flag == 1) {
@@ -344,6 +285,29 @@ void grid_menu() { settings_menu("GRID", grid, grid_buttons, GRID_OPTIONS); }
 void color_menu() { settings_menu("COLOR", color_choice, color_buttons, COLOR_OPTIONS); }
 void time_menu() { settings_menu("TIME", time_choice, color_buttons, TIME_OPTIONS); }
 void angle_menu() { settings_menu("ANGLE", hor_angle, color_buttons, ANGLE_OPTIONS); }
+
+void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
+                      Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p) {
+  for (uint8_t b = 0; b < 3; b++) {
+      if (grid_buttons[b].contains(p.x, p.y)) {
+        if(b == plus_button) {
+              option += single_change;
+              if(option > max) option = max;
+              (*menu_func)();
+        }
+        else if(b == minus_button) {
+              option -= single_change;
+              if(option < min) option = min;
+              (*menu_func)();
+        }
+        else if(b == exit_button) {
+              menu();
+              idx = 2;
+              break;
+        }
+      }
+  }
+}
 
 void list_menu(const char* header, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
     tft.fillScreen(BLACK);
