@@ -24,6 +24,8 @@ public:
     ColorPalette();
     ColorPalette(Array<uint16_t> palette, double min_temp, double max_temp);
     uint16_t getColor(double temp);
+    void setMaxTemp(double temp);
+    void setMinTemp(double temp);
 };
 
 class MapBuilder {

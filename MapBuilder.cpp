@@ -64,3 +64,6 @@ ColorPalette::ColorPalette(Array<uint16_t> palette, double min_temp, double max_
 uint16_t ColorPalette::getColor(double temp) {
     return palette.arr[int(palette.size * (temp - min_temp) / (max_temp - min_temp))];
 }
+
+void ColorPalette::setMaxTemp(double temp) { max_temp = temp; }
+void ColorPalette::setMinTemp(double temp) { min_temp = temp; }
