@@ -71,6 +71,9 @@
 #define BUTTON_BACK 0
 #define BUTTON_REFRESH 1
 
+#define PLATFORM_VER_PORT 24
+#define PLATFORM_HOR_PORT 22
+
 void initGrayPalette(uint16_t* arr);
 void initRolPalette(uint16_t* arr);
 void showInitScreen(Adafruit_TFTLCD &tft);
