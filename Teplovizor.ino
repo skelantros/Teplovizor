@@ -23,12 +23,11 @@ short TS_MAXY = 940;
 TouchScreen ts = TouchScreen(XP, YP, XM, YM, SENSIBILITY);
 
 uint16_t colors[COLORS_COUNT] = {RED, BLUE, BLACK, GREEN, CYAN, MAGENTA, YELLOW, WHITE};
-// Init LCD
 
+// Init LCD
 Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
 // Dimensions
-
 uint16_t width = 0;
 uint16_t height = 0;
 uint16_t idx = 1;
@@ -44,20 +43,15 @@ Adafruit_GFX_Button start_buttons[START_OPTIONS];
 
 //переменные для настроек
 uint16_t buttons_y = 0;
-float temp = 0;
-Adafruit_MLX90614 modIrTemp = Adafruit_MLX90614();
-double** source_arr;
-double** new_arr;
-uint16_t pixel_color;
-uint16_t min_color = 16;
-uint16_t max_color = 24;
-int grid_width = 7;
-int grid_height = 7;
+int grid_width = 10;
+int grid_height = 5;
 int grid = 3;
 int color_choice = 1;
-int time_choice = 1000;
+int time_choice = 700;
 int hor_angle_choice = 30;
-int ver_angle_choice = 30;
+int ver_angle_choice = 15;
+// объект платформы
+Platform platform;
 
 //цвета для палитр
 uint16_t gray_colors[32];
@@ -65,6 +59,9 @@ uint16_t rol_colors[32];
 void setup() {
   initGrayPalette(gray_colors);
   initRolPalette(rol_colors);
+  platform = Platform(PLATFORM_HOR_PORT, PLATFORM_VER_PORT);
+  platform.setVerAngle(90);
+  platform.setHorAngle(90);
   
   //инициализируем экранчик
   tft.reset();
@@ -77,8 +74,6 @@ void setup() {
 
   // Initial screen
   showInitScreen(tft);
-
-  modIrTemp.begin();
   // Wait touch
 
   waitOneTouch();
@@ -108,7 +103,7 @@ void loop() {
         // Action
         switch (b) {
           case BUTTON_START: //если старт, то соответствующая функция вызывается
-            flag = start(flag, temp, new_arr);
+            flag = start(flag);
             idx += 2;
             break;
           case BUTTON_MENU:
@@ -158,7 +153,7 @@ void loop() {
             idx -= 2;
             break;
           case BUTTON_REFRESH:
-            flag = start(flag, temp, new_arr);
+            flag = start(flag);
             break;
         }
       }
@@ -176,77 +171,47 @@ void loop() {
   else if (idx == 7) {
     settings_handler(hor_angle_choice, 30, 90, 10, angle_menu, angle_buttons, ANGLE_RIGHT, ANGLE_LEFT, ANGLE_BACK, p);
   }
-
-  if (flag == 1) {
-    for (int r = 0; r < 215; ++r) {
-      delete[] new_arr[r];
-    }
-    delete[] new_arr;
-
-    //for (int r = 0; r < configurator.getVerSection(); ++r) {
-    //  delete[] source_arr[r];
-    //}
-    delete source_arr;
-  }
 }
 
-int start(int flag, float temperature, double** matrix) {
+int start(int flag) {
   tft.fillScreen(BLACK);
-
-  //source_arr = configurator.measure();
-  // double** test = new double*[8];
-  // for (int i = 0; i < 8; ++i) {
-  //   test[i] = new double[8];
-  // }
-  // for (int i = 0; i < 8; ++i) {
-  //   for (int j  = 0; j < 8; ++j) {
-  //     test[i][j] = 16 + j;
-  //   }
-  // }
-
-  Platform platform = Platform(PLATFORM_HOR_PORT, PLATFORM_VER_PORT);
+  // configuring a configurator (sic!)
   MeasureConfigurator configurator = MeasureConfigurator(90 - hor_angle_choice, 90 + hor_angle_choice, grid_width, 
                                             90 - ver_angle_choice, 90 + ver_angle_choice, grid_height, time_choice, platform);
   
-  double** measures = configurator.measure();
-  Matrix<double> measures_matrix;
-  measures_matrix.arr = measures;
-  measures_matrix.rows = configurator.getVerSection();
-  measures_matrix.columns = configurator.getHorSection();
+  // configuring measures matrix structure
+  Matrix<double> measures;
+  measures.arr = configurator.measure();
+  measures.rows = configurator.getVerSection();
+  measures.columns = configurator.getHorSection();
   // for debugging purposes
   Serial.print("Max temp: "); Serial.println(configurator.getMaxTemp());
   Serial.print("Min temp: "); Serial.println(configurator.getMinTemp());
-  printArray(measures, configurator.getVerSection(), configurator.getHorSection());
+  printArray(measures.arr, measures.rows, measures.columns);
+  // configuring color palette
   Array<uint16_t> colors_array;
   colors_array.arr = color_choice == 0 ? gray_colors : rol_colors;
   colors_array.size = 32;
   ColorPalette palette = ColorPalette(colors_array, configurator.getMinTemp(), configurator.getMaxTemp());
-
-  MapBuilder builder = MapBuilder(&tft, 0, 0, 240, 320, palette, measures_matrix);
+  // configuring map builder and drawing a map
+  MapBuilder builder = MapBuilder(&tft, 0, 0, 320, 240, palette, measures);
   builder.draw();
 
+  // deleting measures matrix
+  for(int r = 0; r < measures.rows; ++r) {
+    delete[] measures.arr[r];
+  }
+  delete* measures.arr;
+
   tft.setTextSize (1);
-  //Array<uint16_t> rol_array;
-  //rol_array.arr = rol_colors;
-  //rol_array.size = 32;
-  //ColorPalette palette = ColorPalette(rol_array, 16, 24);
-  //Matrix<double> test_arr;
-  //test_arr.arr = test;
-  //test_arr.rows = 8; test_arr.columns = 8;
-  //MapBuilder builder = MapBuilder(&tft, 0, 0, 240, 320, palette, test_arr);
-  //builder.draw();
 
   // Header
   uint16_t start_colors[15] = {RED, BLUE};
-  // for (int i = 0; i < 8; ++i) {
-  //   delete test[i];
-  // }
-  // delete test;
   tft.setCursor (95, 0);
   tft.setTextColor(WHITE);
   tft.println("TEMPERATURE");
   tft.setCursor (95, 300);
-  tft.println(temperature);
+  tft.println(platform.takeAmbientMeasure());
   // Footer
 
   flag = 1;
@@ -258,7 +223,7 @@ int start(int flag, float temperature, double** matrix) {
   return flag;
 }
 
-
+// function that prints menu to a special option
 void settings_menu(const char* option_name, int option_value, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
     tft.fillScreen(BLACK);
     tft.setTextSize (1);
@@ -288,6 +253,7 @@ void color_menu() { settings_menu("COLOR", color_choice, color_buttons, COLOR_OP
 void time_menu() { settings_menu("TIME", time_choice, color_buttons, TIME_OPTIONS); }
 void angle_menu() { settings_menu("ANGLE", hor_angle_choice, color_buttons, ANGLE_OPTIONS); }
 
+// function that handles option changing in corresponding menu
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p) {
   for (uint8_t b = 0; b < 3; b++) {
@@ -311,6 +277,7 @@ void settings_handler(int &option, int min, int max, int single_change, void (*m
   }
 }
 
+// function that prints menu consisting some buttons
 void list_menu(const char* header, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
     tft.fillScreen(BLACK);
 
@@ -352,7 +319,6 @@ TSPoint waitOneTouch() {
 }
 
 // Draw a border
-
 void drawBorder () {
 
   uint16_t width = tft.width() - 1;
@@ -364,11 +330,7 @@ void drawBorder () {
 
 }
 
-
-
-
 // Initialize buttons
-
 void initializeButtons() {
 
   uint16_t x = 120;
