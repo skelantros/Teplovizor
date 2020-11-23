@@ -10,6 +10,7 @@
 #include "MeasureConfigurator.h"
 #include "Interpolation.h"
 #include "DefinedConstants.h"
+#include "MapBuilder.h"
 
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p);
@@ -230,10 +231,15 @@ int start(int flag, float temperature, double** matrix) {
   // Header
   uint16_t start_colors[15] = {RED, BLUE};
 
+  Array<uint16_t> rol_array;
+  rol_array.arr = rol_colors;
+  rol_array.size = 32;
+  ColorPalette palette = ColorPalette(rol_array, 16, 24);
   for (uint8_t i = 0; i < 35; ++i) {
     for (uint8_t j = 0; j < 25; ++j) {
-      pixel_color = rol_colors[int(32.0 * (new_arr[i][j] - 16) / (24 - 16))];
-      tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, pixel_color);
+      //pixel_color = rol_colors[int(32.0 * (new_arr[i][j] - 16) / (24 - 16))];
+      //tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, pixel_color);
+      tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, palette.getColor(new_arr[i][j]));
     }
   }
   for (int i = 0; i < 8; ++i) {
