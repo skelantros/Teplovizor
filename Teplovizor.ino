@@ -6,11 +6,10 @@
 #include <SPFD5408_TouchScreen.h>
 #include <SPFD5408_Util.h>
 
-#include "Platform.h"
-#include "MeasureConfigurator.h"
-#include "Interpolation.h"
-#include "DefinedConstants.h"
-#include "MapBuilder.h"
+#include "Classes/Platform.h"
+#include "Classes/MeasureConfigurator.h"
+#include "Utils/DefinedConstants.h"
+#include "Classes/MapBuilder.h"
 
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p);

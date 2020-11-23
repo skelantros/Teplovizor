@@ -1,4 +1,4 @@
-#include "Platform.h"
+#include "Classes/Platform.h"
 
 Platform::Platform(int horizontal, int vertical) {
     _hor.attach(horizontal);

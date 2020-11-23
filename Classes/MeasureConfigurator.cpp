@@ -1,4 +1,4 @@
-#include "MeasureConfigurator.h"
+#include "Classes/MeasureConfigurator.h"
 #include <math.h>
 
 MeasureConfigurator::MeasureConfigurator() {}

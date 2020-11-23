@@ -1,4 +1,4 @@
-#include "DefinedConstants.h"
+#include "Utils/DefinedConstants.h"
 
 void initGrayPalette(uint16_t* arr) {
     int red = 0;
