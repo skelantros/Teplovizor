@@ -13,6 +13,9 @@ class MeasureConfigurator {
     int _horSection, _verSection;
     // платформа, связанная с конфигуратором
     Platform _platform;
+
+    double _minTemp, _maxTemp;
+    bool _areTempsMeasured;
 public:
     MeasureConfigurator();
     MeasureConfigurator(int horMin, int horMax, int horSection,
@@ -22,6 +25,8 @@ public:
     double** measure();
     int getHorSection();
     int getVerSection();
+    double getMinTemp();
+    double getMaxTemp();
 };
 
 #endif
