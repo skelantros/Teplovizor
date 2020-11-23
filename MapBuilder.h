@@ -27,7 +27,7 @@ public:
 };
 
 class MapBuilder {
-    Adafruit_TFTLCD tft;
+    Adafruit_TFTLCD *tft;
     int rows, columns;
     uint16_t x_begin, y_begin;
     ColorPalette palette;
@@ -35,7 +35,7 @@ class MapBuilder {
 
 public:
     MapBuilder();
-    MapBuilder(Adafruit_TFTLCD tft, uint16_t x_begin, uint16_t y_begin, 
+    MapBuilder(Adafruit_TFTLCD *tft, uint16_t x_begin, uint16_t y_begin, 
                int rows, int columns, ColorPalette palette, Matrix<double> source);
     void draw();
 };

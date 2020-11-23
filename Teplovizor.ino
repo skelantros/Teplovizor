@@ -224,24 +224,28 @@ int start(int flag, float temperature, double** matrix) {
       test[i][j] = 16 + j;
     }
   }
-  new_arr = interpolateArray(test, configurator.getVerSection(), configurator.getHorSection(),
-                             35, 25);
+  //new_arr = interpolateArray(test, configurator.getVerSection(), configurator.getHorSection(),
+  //                           35, 25);
   tft.setTextSize (1);
-
-  // Header
-  uint16_t start_colors[15] = {RED, BLUE};
-
   Array<uint16_t> rol_array;
   rol_array.arr = rol_colors;
   rol_array.size = 32;
   ColorPalette palette = ColorPalette(rol_array, 16, 24);
-  for (uint8_t i = 0; i < 35; ++i) {
-    for (uint8_t j = 0; j < 25; ++j) {
+  Matrix<double> test_arr;
+  test_arr.arr = test;
+  test_arr.rows = 8; test_arr.columns = 8;
+  MapBuilder builder = MapBuilder(&tft, 0, 0, 240, 320, palette, test_arr);
+  builder.draw();
+
+  // Header
+  uint16_t start_colors[15] = {RED, BLUE};
+  //for (uint8_t i = 0; i < 35; ++i) {
+  //  for (uint8_t j = 0; j < 25; ++j) {
       //pixel_color = rol_colors[int(32.0 * (new_arr[i][j] - 16) / (24 - 16))];
       //tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, pixel_color);
-      tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, palette.getColor(new_arr[i][j]));
-    }
-  }
+ //     tft.fillRect(0 + 6 * i, 0 + 12 * j, 9, 9, palette.getColor(new_arr[i][j]));
+  //  }
+  //}
   for (int i = 0; i < 8; ++i) {
     delete test[i];
   }
