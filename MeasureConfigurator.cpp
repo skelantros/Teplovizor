@@ -13,10 +13,14 @@ MeasureConfigurator::MeasureConfigurator(int horMin, int horMax, int horSection,
     this->_verSection = verSection;
     this->_singleTime = singleTime;
     this->_platform = platform;
+    _minTemp = _maxTemp = -1;
+    _areTempsMeasured = false;
 }
 
 int MeasureConfigurator::getHorSection() { return _horSection; }
 int MeasureConfigurator::getVerSection() { return _verSection; }
+double MeasureConfigurator::getMinTemp() { return _minTemp; }
+double MeasureConfigurator::getMaxTemp() { return _maxTemp; }
 
 double** MeasureConfigurator::measure() {
     double** arr = new double*[_verSection];
@@ -31,11 +35,20 @@ double** MeasureConfigurator::measure() {
     double verDiff = (double)(_verMax - _verMin) / (_verSection - 1);
     double horDiff = (double)(_horMax - _horMin) / (_horSection - 1);
 
+
     for(int v = 0; v < _verSection; ++v) {
         for(int h = 0; h < _horSection; ++h) {
-            arr[v][h] = _platform.takeObjectMeasure();
+            double temp = _platform.takeObjectMeasure();
+            if(!_areTempsMeasured) {
+                _minTemp = _maxTemp = temp;
+                _areTempsMeasured = true;
+            } else if(_minTemp > temp) {
+                _minTemp = temp;
+            } else if(_maxTemp < temp) {
+                _maxTemp = temp;
+            }
+            arr[v][h] = temp;
             _platform.setHorAngle((int) round(currHorAngle));
-            //Serial.print(currHorAngle); Serial.print(' '); Serial.println(currVerAngle);
             delay(_singleTime);
             currHorAngle += horDiff;
         }
