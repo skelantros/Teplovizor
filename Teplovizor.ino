@@ -8,7 +8,6 @@
 
 #include "Platform.h"
 #include "MeasureConfigurator.h"
-#include "Interpolation.h"
 #include "DefinedConstants.h"
 #include "MapBuilder.h"
 
