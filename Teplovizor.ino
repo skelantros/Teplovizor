@@ -15,7 +15,7 @@
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p);
 
-// Init TouchScreen:
+// инициализация TouchScreen
 short TS_MINX = 150;
 short TS_MINY = 120;
 short TS_MAXX = 920;
@@ -24,10 +24,10 @@ TouchScreen ts = TouchScreen(XP, YP, XM, YM, SENSIBILITY);
 
 uint16_t colors[COLORS_COUNT] = {RED, BLUE, BLACK, GREEN, CYAN, MAGENTA, YELLOW, WHITE};
 
-// Init LCD
+// экранчик
 Adafruit_TFTLCD tft(LCD_CS, LCD_CD, LCD_WR, LCD_RD, LCD_RESET);
 
-// Dimensions
+// измерения
 uint16_t width = 0;
 uint16_t height = 0;
 uint16_t idx = 1;
@@ -38,12 +38,10 @@ Adafruit_GFX_Button option_buttons[GRID_OPTIONS];
 Adafruit_GFX_Button color_buttons[COLOR_OPTIONS];
 Adafruit_GFX_Button start_buttons[START_OPTIONS];
 
-
-//переменные для настроек
+// переменные для настроек
 uint16_t buttons_y = 0;
 int grid_width = 10;
 int grid_height = 5;
-int grid = 3;
 int color_choice = 1;
 int time_choice = 700;
 int hor_angle_choice = 30;
@@ -70,10 +68,8 @@ void setup() {
   initializeButtons();
   drawBorder();
 
-  // Initial screen
+  // демонстрация стартового экрана
   showInitScreen(tft);
-  // Wait touch
-
   waitOneTouch();
   list_menu("MAIN_MENU", buttons, BUTTONS);
 
@@ -82,24 +78,20 @@ void setup() {
 int flag = 0;
 void loop() {
   TSPoint p;
-
+  // ожидания нажатия на экран
   digitalWrite(13, HIGH);
-
   p = waitOneTouch();
-
   digitalWrite(13, LOW);
-
-  // Map of values
-
   p.x = mapXValue(p);
   p.y = mapYValue(p);
-  if (idx == MAIN_MENU_IDX) {
-    for (uint8_t b = 0; b < BUTTONS; b++) { //для каждой кнопки
 
-      if (buttons[b].contains(p.x, p.y)) { //если на кнопку нажали
-        // Action
+  // выполнение действия, соответствующего нажатой кнопке в текущем меню
+  if (idx == MAIN_MENU_IDX) {
+    for (uint8_t b = 0; b < BUTTONS; b++) {
+
+      if (buttons[b].contains(p.x, p.y)) {
         switch (b) {
-          case BUTTON_START: //если старт, то соответствующая функция вызывается
+          case BUTTON_START:
             flag = start(flag);
             idx = MEASURE_MENU_IDX;
             break;
@@ -115,7 +107,6 @@ void loop() {
     for (uint8_t b = 0; b < MENU_OPTIONS; b++) {
 
       if (menu_buttons[b].contains(p.x, p.y)) {
-        // Action
         switch (b) {
           case MENU_VER_GRID:
             ver_grid_menu();
@@ -186,29 +177,29 @@ void loop() {
 
 int start(int flag) {
   tft.fillScreen(BLACK);
-  // configuring a configurator (sic!)
+  // инициализация конфигуратора
   MeasureConfigurator configurator = MeasureConfigurator(90 - hor_angle_choice, 90 + hor_angle_choice, grid_width, 
                                             90 - ver_angle_choice, 90 + ver_angle_choice, grid_height, time_choice, platform);
   
-  // configuring measures matrix structure
+  // инициализация и заполнение матрицы измерений
   Matrix<double> measures;
   measures.arr = configurator.measure();
   measures.rows = configurator.getVerSection();
   measures.columns = configurator.getHorSection();
-  // for debugging purposes
-  Serial.print("Max temp: "); Serial.println(configurator.getMaxTemp());
-  Serial.print("Min temp: "); Serial.println(configurator.getMinTemp());
-  printArray(measures.arr, measures.rows, measures.columns);
-  // configuring color palette
+  //Serial.print("Max temp: "); Serial.println(configurator.getMaxTemp());
+  //Serial.print("Min temp: "); Serial.println(configurator.getMinTemp());
+  //printArray(measures.arr, measures.rows, measures.columns);
+
+  // инициализация цветовой палитры
   Array<uint16_t> colors_array;
   colors_array.arr = color_choice == 0 ? gray_colors : rol_colors;
   colors_array.size = 32;
   ColorPalette palette = ColorPalette(colors_array, configurator.getMinTemp(), configurator.getMaxTemp());
-  // configuring map builder and drawing a map
+  // инициализация построителя тепловой карты и ее отрисовка
   MapBuilder builder = MapBuilder(&tft, 0, 0, 320, 240, palette, measures);
   builder.draw();
 
-  // deleting measures matrix
+  // очистка матрицы измерений
   for(int r = 0; r < measures.rows; ++r) {
     delete[] measures.arr[r];
   }
@@ -216,17 +207,11 @@ int start(int flag) {
 
   tft.setTextSize (1);
 
-  // Header
   uint16_t start_colors[15] = {RED, BLUE};
-  tft.setCursor (95, 0);
-  tft.setTextColor(WHITE);
-  tft.println("TEMPERATURE");
-  tft.setCursor (95, 300);
-  tft.println(platform.takeAmbientMeasure());
-  // Footer
+  print_in_header("TEMPERATURE", 0, WHITE);
+  print_in_header(platform.takeAmbientMeasure(), 300, WHITE);
 
   flag = 1;
-
   // Buttons
   for (uint8_t i = 0; i < 2; i++) {
     start_buttons[i].drawButton();
@@ -234,26 +219,29 @@ int start(int flag) {
   return flag;
 }
 
-// function that prints menu to a special option
-void settings_menu(const char* option_name, int option_value, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
+template <typename T>
+void print_in_header(T info, uint16_t y, uint16_t color) {
+  tft.setCursor (95, y);
+  tft.setTextColor(color);
+  tft.println(info);
+}
+
+// функция, отрисовывающая меню для конкретной настройки тепловизора
+void settings_menu(char* option_name, int option_value, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
     tft.fillScreen(BLACK);
     tft.setTextSize (1);
 
-    // Header
+    // заголовок
     tft.fillRect(0, 0, width, 10, RED);
+    //print_in_header(option_name, 0, WHITE);
+    //print_in_header(option_name, 300, " OPTION");
 
-    tft.setCursor (95, 0);
-    tft.setTextColor(WHITE);
-    tft.println(option_name);
-    tft.setCursor(80, 300);
-    tft.print(option_name);
-    tft.println(" OPTION");
-
+    // значение параметра
     tft.setCursor(95, 200);
     tft.setTextSize(4);
     tft.println(option_value);
 
-    // Buttons
+    // кнопки
     for (uint8_t i = 0; i < buttons_count; i++) {
       buttons[i].drawButton();
     }
@@ -266,7 +254,7 @@ void hor_angle_menu() { settings_menu("HOR.ANGLE", hor_angle_choice, option_butt
 void color_menu() { settings_menu("COLOR", color_choice, color_buttons, COLOR_OPTIONS); }
 void time_menu() { settings_menu("TIME", time_choice, option_buttons, TIME_OPTIONS); }
 
-// function that handles option changing in corresponding menu
+// функция, обрабатывающая изменения настройки тепловизора в соответствующем меню
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p) {
   for (uint8_t b = 0; b < 3; b++) {
@@ -290,22 +278,18 @@ void settings_handler(int &option, int min, int max, int single_change, void (*m
   }
 }
 
-// function that prints menu consisting some buttons
+// функция, отрисовывающая меню, содержащее только кнопки
 void list_menu(const char* header, Adafruit_GFX_Button* buttons, uint16_t buttons_count) {
     tft.fillScreen(BLACK);
 
 
     tft.setTextSize (1);
 
-    // Header
-
+    // заголовок
     tft.fillRect(0, 0, width, 10, RED);
+    print_in_header("SETTINGS", 0, WHITE);
 
-    tft.setCursor (95, 0);
-    tft.setTextColor(WHITE);
-    tft.println("SETTINGS");
-
-    // Buttons
+    // кнопки
     for (uint8_t i = 0; i < buttons_count; i++) {
       buttons[i].drawButton();
     }
@@ -317,13 +301,11 @@ void main_menu() { list_menu("MAIN MENU", buttons, BUTTONS); }
 
 
 TSPoint waitOneTouch() {
-
   TSPoint p;
-
   do {
     p = ts.getPoint();
 
-    pinMode(XM, OUTPUT); //Pins configures again for TFT control
+    pinMode(XM, OUTPUT);
     pinMode(YP, OUTPUT);
 
   } while ((p.z < MINPRESSURE ) || (p.z > MAXPRESSURE));
@@ -331,7 +313,6 @@ TSPoint waitOneTouch() {
   return p;
 }
 
-// Draw a border
 void drawBorder () {
 
   uint16_t width = tft.width() - 1;
@@ -343,7 +324,6 @@ void drawBorder () {
 
 }
 
-// Initialize buttons
 void initializeButtons() {
 
   uint16_t x = 120;
@@ -414,7 +394,6 @@ void initializeButtons() {
 
 }
 
-// Map the coordinate X
 uint16_t mapXValue(TSPoint p) {
 
   uint16_t x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
@@ -425,9 +404,6 @@ uint16_t mapXValue(TSPoint p) {
   return x;
 
 }
-
-// Map the coordinate Y
-
 uint16_t mapYValue(TSPoint p) {
 
   uint16_t y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
