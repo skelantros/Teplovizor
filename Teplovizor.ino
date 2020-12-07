@@ -39,7 +39,6 @@ Adafruit_GFX_Button color_buttons[COLOR_OPTIONS];
 Adafruit_GFX_Button start_buttons[START_OPTIONS];
 
 // переменные для настроек
-uint16_t buttons_y = 0;
 int grid_width = 10;
 int grid_height = 5;
 int color_choice = 1;
@@ -389,9 +388,6 @@ void initializeButtons() {
                                 w, 45, WHITE, BLUE, WHITE,
                                 start_buttonlabels[b], textSize);
   }
-
-  buttons_y = y;
-
 }
 
 uint16_t mapXValue(TSPoint p) {
