@@ -40,12 +40,14 @@
 #define BUTTON_START 0 // типа id для кнопки, чтобы прорисовывать и использовать в switch 
 #define BUTTON_MENU 1
 
-#define MENU_OPTIONS 5
-#define MENU_GRID 0
-#define MENU_COLOR 1
-#define MENU_TIME 2
-#define MENU_ANGLE 3
-#define MENU_BACK 4
+#define MENU_OPTIONS 7
+#define MENU_HOR_GRID 0
+#define MENU_VER_GRID 1
+#define MENU_HOR_ANGLE 2
+#define MENU_VER_ANGLE 3
+#define MENU_COLOR 4
+#define MENU_TIME 5
+#define MENU_BACK 6
 
 #define GRID_OPTIONS 3
 #define GRID_MINUS 0
@@ -73,6 +75,16 @@
 
 #define PLATFORM_VER_PORT 24
 #define PLATFORM_HOR_PORT 22
+
+#define MAIN_MENU_IDX 1
+#define SETTINGS_MENU_IDX 2
+#define MEASURE_MENU_IDX 3
+#define HOR_ANGLE_MENU_IDX 4
+#define VER_ANGLE_MENU_IDX 5
+#define HOR_GRID_MENU_IDX 6
+#define VER_GRID_MENU_IDX 7
+#define COLOR_MENU_IDX 8
+#define TIME_MENU_IDX 9
 
 void initGrayPalette(uint16_t* arr);
 void initRolPalette(uint16_t* arr);

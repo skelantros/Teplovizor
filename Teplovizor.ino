@@ -34,10 +34,8 @@ uint16_t idx = 1;
 
 Adafruit_GFX_Button buttons[BUTTONS]; //инициализируем кнопки
 Adafruit_GFX_Button menu_buttons[MENU_OPTIONS];
-Adafruit_GFX_Button grid_buttons[GRID_OPTIONS];
+Adafruit_GFX_Button option_buttons[GRID_OPTIONS];
 Adafruit_GFX_Button color_buttons[COLOR_OPTIONS];
-Adafruit_GFX_Button time_buttons[TIME_OPTIONS];
-Adafruit_GFX_Button angle_buttons[ANGLE_OPTIONS];
 Adafruit_GFX_Button start_buttons[START_OPTIONS];
 
 
@@ -95,8 +93,7 @@ void loop() {
 
   p.x = mapXValue(p);
   p.y = mapYValue(p);
-  //делаем функционал кнопок для экрана таким образом, idx = 1: главный экран, idx = 2: меню настроек, idx = 3: меню с запуском измерений 4..7 - настройки для измерений
-  if (idx == 1) {
+  if (idx == MAIN_MENU_IDX) {
     for (uint8_t b = 0; b < BUTTONS; b++) { //для каждой кнопки
 
       if (buttons[b].contains(p.x, p.y)) { //если на кнопку нажали
@@ -104,53 +101,61 @@ void loop() {
         switch (b) {
           case BUTTON_START: //если старт, то соответствующая функция вызывается
             flag = start(flag);
-            idx += 2;
+            idx = MEASURE_MENU_IDX;
             break;
           case BUTTON_MENU:
             list_menu("SETTINGS", menu_buttons, MENU_OPTIONS);
-            idx++;
+            idx = SETTINGS_MENU_IDX;
             break;
         }
       }
     }
   }
-  else if (idx == 2) {
+  else if (idx == SETTINGS_MENU_IDX) {
     for (uint8_t b = 0; b < MENU_OPTIONS; b++) {
 
       if (menu_buttons[b].contains(p.x, p.y)) {
         // Action
         switch (b) {
-          case MENU_GRID:
-            grid_menu();
-            idx += 2;
+          case MENU_VER_GRID:
+            ver_grid_menu();
+            idx = VER_GRID_MENU_IDX;
+            break;
+          case MENU_HOR_GRID:
+            ver_grid_menu();
+            idx = HOR_GRID_MENU_IDX;
+            break;
+          case MENU_VER_ANGLE:
+            ver_angle_menu();
+            idx = VER_ANGLE_MENU_IDX;
+            break;
+          case MENU_HOR_ANGLE:
+            hor_angle_menu();
+            idx = HOR_ANGLE_MENU_IDX;
             break;
           case MENU_COLOR:
             color_menu();
-            idx += 3;
+            idx = COLOR_MENU_IDX;
             break;
           case MENU_TIME:
             time_menu();
-            idx += 4;
-            break;
-          case MENU_ANGLE:
-            angle_menu();
-            idx += 5;
+            idx = TIME_MENU_IDX;
             break;
           case MENU_BACK:
             main_menu();
-            idx--;
+            idx = MAIN_MENU_IDX;
             break;
         }
       }
     }
   }
-  else if (idx == 3) {
+  else if (idx == MEASURE_MENU_IDX) {
     for (uint8_t b = 0; b < START_OPTIONS; b++) {
       if (start_buttons[b].contains(p.x, p.y)) {
         switch (b) {
           case BUTTON_BACK:
             main_menu();
-            idx -= 2;
+            idx = MAIN_MENU_IDX;
             break;
           case BUTTON_REFRESH:
             flag = start(flag);
@@ -159,17 +164,23 @@ void loop() {
       }
     }
   }
-  else if (idx == 4) {
-    settings_handler(grid, 5, 20, 3, grid_menu, grid_buttons, GRID_PLUS, GRID_MINUS, GRID_BACK, p);
+  else if (idx == VER_GRID_MENU_IDX) {
+    settings_handler(grid_height, 5, 20, 3, ver_grid_menu, option_buttons, GRID_PLUS, GRID_MINUS, GRID_BACK, p);
   }
-  else if (idx == 5) {
+  else if (idx == HOR_GRID_MENU_IDX) {
+    settings_handler(grid_width, 5, 20, 3, hor_grid_menu, option_buttons, GRID_PLUS, GRID_MINUS, GRID_BACK, p);
+  }
+  else if (idx == VER_ANGLE_MENU_IDX) {
+    settings_handler(ver_angle_choice, 30, 90, 10, ver_angle_menu, option_buttons, ANGLE_RIGHT, ANGLE_LEFT, ANGLE_BACK, p);
+  }
+  else if (idx == HOR_ANGLE_MENU_IDX) {
+    settings_handler(hor_angle_choice, 30, 90, 10, hor_angle_menu, option_buttons, ANGLE_RIGHT, ANGLE_LEFT, ANGLE_BACK, p);
+  }
+  else if (idx == COLOR_MENU_IDX) {
     settings_handler(color_choice, 0, 1, 1, color_menu, color_buttons, COLOR_RIGHT, COLOR_LEFT, COLOR_BACK, p);
   }
-  else if (idx == 6) {
-    settings_handler(time_choice, 100, 5000, 100, time_menu, time_buttons, TIME_RIGHT, TIME_LEFT, TIME_BACK, p);
-  }
-  else if (idx == 7) {
-    settings_handler(hor_angle_choice, 30, 90, 10, angle_menu, angle_buttons, ANGLE_RIGHT, ANGLE_LEFT, ANGLE_BACK, p);
+  else if (idx == TIME_MENU_IDX) {
+    settings_handler(time_choice, 100, 5000, 100, time_menu, option_buttons, TIME_RIGHT, TIME_LEFT, TIME_BACK, p);
   }
 }
 
@@ -248,16 +259,18 @@ void settings_menu(const char* option_name, int option_value, Adafruit_GFX_Butto
     }
 }
 
-void grid_menu() { settings_menu("GRID", grid, grid_buttons, GRID_OPTIONS); }
+void ver_grid_menu() { settings_menu("VER.GRID", grid_height, option_buttons, GRID_OPTIONS); }
+void hor_grid_menu() { settings_menu("HOR.GRID", grid_width, option_buttons, GRID_OPTIONS); }
+void ver_angle_menu() { settings_menu("VER.ANGLE", ver_angle_choice, option_buttons, ANGLE_OPTIONS); }
+void hor_angle_menu() { settings_menu("HOR.ANGLE", hor_angle_choice, option_buttons, ANGLE_OPTIONS); }
 void color_menu() { settings_menu("COLOR", color_choice, color_buttons, COLOR_OPTIONS); }
-void time_menu() { settings_menu("TIME", time_choice, color_buttons, TIME_OPTIONS); }
-void angle_menu() { settings_menu("ANGLE", hor_angle_choice, color_buttons, ANGLE_OPTIONS); }
+void time_menu() { settings_menu("TIME", time_choice, option_buttons, TIME_OPTIONS); }
 
 // function that handles option changing in corresponding menu
 void settings_handler(int &option, int min, int max, int single_change, void (*menu_func)(void), 
                       Adafruit_GFX_Button* buttons, uint16_t plus_button, uint16_t minus_button, uint16_t exit_button, TSPoint p) {
   for (uint8_t b = 0; b < 3; b++) {
-      if (grid_buttons[b].contains(p.x, p.y)) {
+      if (option_buttons[b].contains(p.x, p.y)) {
         if(b == plus_button) {
               option += single_change;
               if(option > max) option = max;
@@ -342,11 +355,9 @@ void initializeButtons() {
   uint8_t textSize = 1;
 
   char main_buttonlabels[2][20] = {"START", "SETTINGS"};
-  char menu_buttonlabels[5][20] = {"GRID", "COLOR", "TIME", "ANGLE", "BACK"};
-  char grid_buttonlabels[3][20] = {"-", "+", "BACK"};
+  char menu_buttonlabels[7][20] = {"HOR. GRID", "VER. GRID", "HOR.ANGLE", "VER.ANGLE", "COLOR", "TIME", "BACK"};
+  char option_buttonlabels[3][20] = {"-", "+", "BACK"};
   char color_buttonlabels[3][20] = {"<-", "->", "BACK"};
-  char time_buttonlabels[3][20] = {"-", "+", "BACK"};
-  char angle_buttonlabels[3][20] = {"-", "+", "BACK"};
   char start_buttonlabels[2][20] = {"BACK", "REFRESH"};
 
   uint16_t main_buttoncolors[15] = {RED, BLUE};
@@ -357,37 +368,40 @@ void initializeButtons() {
                           w, h, WHITE, main_buttoncolors[b], WHITE,    // w, h, outline, fill,
                           main_buttonlabels[b], textSize);             // text
   }
-  for (uint8_t b = 0; b < 5; b++) {
+
+  uint16_t curr_y = set_y;
+  for(uint8_t b = 0; b < 4; b += 2) {
     menu_buttons[b].initButton(&tft,
-                               x, set_y + b * 60,
+                               x / 2, curr_y,
+                               w / 2, set_h, WHITE, BLUE, WHITE,
+                               menu_buttonlabels[b], textSize);
+    menu_buttons[b+1].initButton(&tft,
+                               x + x / 2, curr_y,
+                               w / 2, set_h, WHITE, BLUE, WHITE,
+                               menu_buttonlabels[b+1], textSize);
+    curr_y += 60;
+  }
+
+  for (uint8_t b = 4; b < 7; b++) {
+    menu_buttons[b].initButton(&tft,
+                               x, curr_y,
                                w, set_h, WHITE, BLUE, WHITE,
                                menu_buttonlabels[b], textSize);
+    curr_y += 60;
   }
   // Save the y position to avoid draws
 
   for (uint8_t b = 0; b < 3; b++) {
-    grid_buttons[b].initButton(&tft,
+    option_buttons[b].initButton(&tft,
                                x, set_y + b * 60,
                                w, set_h, WHITE, BLUE, WHITE,
-                               grid_buttonlabels[b], textSize);
+                               option_buttonlabels[b], textSize);
   }
   for (uint8_t b = 0; b < 3; b++) {
     color_buttons[b].initButton(&tft,
                                 x, set_y + b * 60,
                                 w, set_h, WHITE, BLUE, WHITE,
                                 color_buttonlabels[b], textSize);
-  }
-  for (uint8_t b = 0; b < 3; b++) {
-    time_buttons[b].initButton(&tft,
-                               x, set_y + b * 60,
-                               w, set_h, WHITE, BLUE, WHITE,
-                               time_buttonlabels[b], textSize);
-  }
-  for (uint8_t b = 0; b < 3; b++) {
-    angle_buttons[b].initButton(&tft,
-                                x, set_y + b * 60,
-                                w, set_h, WHITE, BLUE, WHITE,
-                                angle_buttonlabels[b], textSize);
   }
   for (uint8_t b = 0; b < 2; b++) {
     start_buttons[b].initButton(&tft,
